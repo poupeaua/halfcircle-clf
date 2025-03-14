@@ -16,19 +16,21 @@ to train a robust classifier. Plus only using grayscale image makes the tasks
 even simpler by using only images with one input channel.
 
 The different data used are the following:
-- Basic Half circle: images generated with [generate.py](src/data/generate.py)
-- Crops from .pdf file: images generated with [generate.py](src/data/generate.py).
-This is particularly useful to generate data from PDF files that look like real-life scanned documents.
+- **Basic Half circle**: generate some label 1 data.
+- **Crops from .pdf file**: This is particularly useful to generate data from PDF files 
+that look like real-life scanned documents.
 Once trained, the model in production will predict on crops of PDF files so
 training on crops from PDF files samples is really useful. Moreover, we can also
 draw half-circles on top of the crops images to not only augment the label 0 data but
 also the label 1 data.
-- [Quick Draw dataset](https://github.com/googlecreativelab/quickdraw-dataset?tab=readme-ov-file#get-the-data): it contains a large collection of hand-drawn grayscale 
-images.
-- [Picsum](https://picsum.photos/): this is a website that generates random images.
+- [**Quick Draw dataset**](https://github.com/googlecreativelab/quickdraw-dataset?tab=readme-ov-file#get-the-data): it contains a large collection of hand-drawn grayscale 
+images. This helps to teach the model what a half-circle is not.
+- [**Picsum**](https://picsum.photos/): this is a website that generates random images.
 We can easily download thousands of grayscale images of any shape we want.
-- Noise images: generated with [generate.py](src/data/generate.py) to make the model more robust.
-- Pure filled images: generated with [generate.py](src/data/generate.py) to make the model more robust.
+- **Noise**: simple noise images.
+- **Pure filled**: simple filled images.
+
+Most of the data is generated with the [generate.py](src/data/generate.py) script.
 
 ### Data Augmentation
 
