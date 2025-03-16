@@ -9,7 +9,7 @@ import numpy as np
 import cv2
 import pymupdf
 
-from src.data.config import IMG_SHAPE, MAX_RADIUS, MIN_RADIUS, \
+from src.data.config import IMG_SHAPE, MAX_RADIUS_PCT, MIN_RADIUS_PCT, \
     MIN_THICKNESS, MAX_THICKNESS, PICSUM_URL
 from src.data.utils import download_image
 from src.data.readfile import read_pdf_to_images
@@ -19,8 +19,8 @@ def generate_half_circle_image(
         image: Optional[np.ndarray] = None,
         width: int = IMG_SHAPE[1], 
         height: int = IMG_SHAPE[0],
-        min_radius: int = MIN_RADIUS,
-        max_radius: int = MAX_RADIUS,
+        min_radius_pct: float = MIN_RADIUS_PCT,
+        max_radius_pct: float = MAX_RADIUS_PCT,
         min_thickness: int = MIN_THICKNESS,
         max_thickness: int = MAX_THICKNESS,
         x_center_offset_pct: int = 0.2,
@@ -51,23 +51,30 @@ def generate_half_circle_image(
             image height. Defaults to 0.2.
         min_angle (int, optional): minimum angle of the half circle. Defaults to -15.
         max_angle (int, optional): maximum angle of the half circle. Defaults to 15.
+        added_thickness_cleaning_image (int, optional): thickness to add to the half 
+            circle contour to clean the image. Defaults to None.
 
     Returns:
         np.ndarray: image with a half circle
     """
     if image is not None:
+        assert added_thickness_cleaning_image is not None
         width = image.shape[1]
         height = image.shape[0]
 
+    # radius configuration
+    min_side = min(width, height)
+    absolute_min_limit_radius = min_side // 2
+    chose_radius = random.randint(
+        int(min_side * min_radius_pct), 
+        int(min_side * max_radius_pct)
+    )
+    radius = min(absolute_min_limit_radius, chose_radius)
+
     # center of the half circle configuration
     width_offset = int(width * random.uniform(-x_center_offset_pct, x_center_offset_pct))
-    height_offset = int(height * random.uniform(-y_center_offset_pct, y_center_offset_pct))
+    height_offset = int(height* random.uniform(-y_center_offset_pct+0.1, y_center_offset_pct+0.3))
     center = (width // 2 + width_offset, height // 2 + height_offset)
-
-    # radius configuration
-    absolute_min_limit_radius = min(width, height) // 2
-    chose_radius = random.randint(min_radius, max_radius)
-    radius = min(absolute_min_limit_radius, chose_radius)
 
     # angle configuration
     start_angle = random.randint(min_angle, max_angle) + 180

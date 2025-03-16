@@ -5,10 +5,9 @@ NN model class
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import lightning as pl
 import torch.nn.functional as F
 
-class HCCLF(pl.LightningModule):
+class HCCLF(nn.Module):
     def __init__(self, lr=1e-3):
         super().__init__()
         self.lr = lr
