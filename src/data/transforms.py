@@ -7,7 +7,7 @@ import torchvision.transforms.v2 as T
 import torchvision.transforms.functional as F
 import random
 
-from src.data.config import IMG_SHAPE, IMG_RANDOM_RESIZE_CROP_SCALE
+from src.data.config import IMG_SHAPE
 
 class RandomDilateTransform:
     def __init__(self, min_kernel=3, max_kernel=7, p=0.5):
@@ -30,10 +30,42 @@ class RandomDilateTransform:
             if kernel_size % 2 == 0:
                 kernel_size += 1 # needed to ensure same output size
             padding = (kernel_size - 1) // 2  # Ensure same output size
-            dilated_tensor = torch.nn.functional.max_pool2d(tensor_image, kernel_size, stride=1, padding=padding)
+            dilated_tensor = torch.nn.functional.max_pool2d(
+                tensor_image, kernel_size, stride=1, padding=padding
+            )
             dilated_tensor = 1 - dilated_tensor
             return dilated_tensor
         return tensor_image
+    
+
+class RandomThreshold:
+    def __init__(self, p=0.5, min_threshold=0.25, max_threshold=0.75):
+        self.p = p
+        self.min_threshold = min_threshold
+        self.max_threshold = max_threshold
+        assert self.min_threshold < self.max_threshold
+        assert self.min_threshold >= 0 and self.max_threshold <= 1
+    
+    def __call__(self, img):
+        """
+        Args:
+            img (PIL Image or Tensor): Grayscale image to be thresholded.
+        Returns:
+            Tensor: Thresholded binary image.
+        """
+        if random.random() > self.p:
+            return img
+        
+        if isinstance(img, torch.Tensor):
+            img = img.clone()  # Avoid modifying the original image
+        else:
+            img = T.ToTensor()(img)
+        
+        strength = torch.rand(1).item()  # Random value between 0 and 1
+        threshold = self.min_threshold + \
+            strength * (self.max_threshold - self.min_threshold)
+        return (img > threshold).float()  # Apply threshold and return binary image
+
 
 # Transform pipeline for training grayscale images (with augmentations)
 TRAIN_TRANSFORMS = T.Compose([
@@ -44,7 +76,8 @@ TRAIN_TRANSFORMS = T.Compose([
     T.RandomAffine(degrees=0, translate=(0.2, 0.2), fill=255),
     T.ToTensor(),  # Convert image to tensor
     T.GaussianNoise(sigma=0.01),
-    RandomDilateTransform(min_kernel=3, max_kernel=7, p=0.5),  # Random dilation strength
+    RandomThreshold(p=0.5, min_threshold=0.25, max_threshold=0.75), # Random threshold
+    RandomDilateTransform(min_kernel=3, max_kernel=7, p=0.5), # Random dilation strength
     T.Normalize(mean=[0.5], std=[0.5])  # Normalize for grayscale images
 ])
 
@@ -53,6 +86,5 @@ TEST_TRANSFORMS = T.Compose([
     T.Grayscale(num_output_channels=1),  # Convert to grayscale
     T.Resize(IMG_SHAPE),  # Resize to a fixed size
     T.ToTensor(),  # Convert image to tensor
-    T.ConvertImageDtype(torch.float32),  # Convert image to float
     T.Normalize(mean=[0.5], std=[0.5])  # Normalize for grayscale images
 ])
