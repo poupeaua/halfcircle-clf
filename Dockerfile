@@ -4,13 +4,15 @@ ARG APP_DIR=/app
 
 WORKDIR ${APP_DIR}
 
-COPY ./requirements.txt ${APP_DIR}/requirements.txt
+RUN pip install uv
 
-RUN pip install --no-cache-dir --upgrade -r ${APP_DIR}/requirements.txt
+COPY ./requirements-api.txt ${APP_DIR}/requirements.txt
+
+RUN uv pip install -r requirements.txt --system
 
 COPY ./models ${APP_DIR}/models
 COPY ./src ${APP_DIR}/src
-COPY ./app.py ${APP_DIR}/app.py
+COPY ./api.py ${APP_DIR}/api.py
 
-CMD ["fastapi", "run", "${APP_DIR}/app.py", "--port", "80"]
-
+EXPOSE 80
+CMD ["fastapi", "run", "/app/api.py", "--port", "80"]
