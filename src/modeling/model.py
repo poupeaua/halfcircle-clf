@@ -8,6 +8,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 class HCCLF(nn.Module):
+    """Half Circle Classification model"""
+    
     def __init__(self, lr=1e-3):
         super().__init__()
         self.lr = lr

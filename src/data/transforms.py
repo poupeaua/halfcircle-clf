@@ -66,6 +66,21 @@ class RandomThreshold:
             strength * (self.max_threshold - self.min_threshold)
         return (img > threshold).float()  # Apply threshold and return binary image
 
+class ToTensorNew:
+
+    def __call__(self, img):
+        """
+        Convert a PIL Image or numpy.ndarray to a tensor.
+        
+        Args:
+            img (PIL Image or numpy.ndarray): Image to be converted.
+        
+        Returns:
+            Tensor: Converted image as a tensor.
+        """
+        if isinstance(img, torch.Tensor):
+            return img
+        return T.Compose([T.ToImage(), T.ToDtype(torch.float32, scale=True)])(img)
 
 # Transform pipeline for training grayscale images (with augmentations)
 TRAIN_TRANSFORMS = T.Compose([
@@ -82,7 +97,7 @@ TRAIN_TRANSFORMS = T.Compose([
 ])
 
 # Transform pipeline for testing/validation grayscale images (no augmentations)
-TEST_TRANSFORMS = T.Compose([
+INFERENCE_TRANSFORMS = T.Compose([
     T.Grayscale(num_output_channels=1),  # Convert to grayscale
     T.Resize(IMG_SHAPE),  # Resize to a fixed size
     T.ToTensor(),  # Convert image to tensor
