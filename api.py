@@ -22,7 +22,7 @@ model = HCCLF()
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 
-@app.post("/predict/")
+@app.post("/predict")
 def predict(file: bytes = File(...)):
     try:
         image = Image.open(io.BytesIO(file))
@@ -37,6 +37,6 @@ def predict(file: bytes = File(...)):
     except Exception as e:
         raise HTTPException(detail=str(e), status_code=400)
     
-@app.get("/test/")
-def test():
-    return JSONResponse(content={"message": "API is working!"})
+@app.get("/health")
+def health():
+    return JSONResponse(content={"status": "ok"})
